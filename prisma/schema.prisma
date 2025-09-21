@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+//
+// ENUMS
+//
+enum Role {
+  ADMIN
+  USER
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  POSTED
+  FAILED
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+}
+
+//
+// MODELS
+//
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  // Relasi ke NextAuth
+  accounts Account[]
+  sessions Session[]
+
+  // Relasi ke data lain
+  assets         Asset[]
+  generations    AIGeneration[]
+  scheduledPosts ScheduledPost[]
+}
+
+model Asset {
+  id        String    @id @default(cuid())
+  userId    String
+  type      AssetType @default(IMAGE)
+  url       String
+  publicId  String
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AIGeneration {
+  id        String   @id @default(cuid())
+  userId    String
+  caption   String
+  hashtags  String
+  createdAt DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledPosts ScheduledPost[]
+}
+
+model ScheduledPost {
+  id              String     @id @default(cuid())
+  userId          String
+  generationId    String
+  platform        String
+  scheduledAt     DateTime
+  status          PostStatus @default(DRAFT)
+  captionOverride String? // kalau user mau edit caption AI
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generation AIGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
+}
+
+//
+// NextAuth Models
+//
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
