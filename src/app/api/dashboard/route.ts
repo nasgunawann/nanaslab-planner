@@ -1,0 +1,37 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth"; // sesuaikan path sesuai setup kamu
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Ambil userId dari email
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const [totalContent, draftCount, scheduledCount, publishedCount] =
+    await Promise.all([
+      prisma.content.count({ where: { userId: user.id } }),
+      prisma.content.count({ where: { userId: user.id, status: "DRAFT" } }),
+      prisma.content.count({ where: { userId: user.id, status: "SCHEDULED" } }),
+      prisma.content.count({ where: { userId: user.id, status: "PUBLISHED" } }),
+    ]);
+
+  return NextResponse.json({
+    totalContent,
+    draftCount,
+    scheduledCount,
+    publishedCount,
+  });
+}

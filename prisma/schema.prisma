@@ -53,6 +53,7 @@ model User {
   assets         Asset[]
   generations    AIGeneration[]
   scheduledPosts ScheduledPost[]
+  contents       Content[] // semua konten milik user
 }
 
 model Asset {
@@ -75,19 +76,22 @@ model AIGeneration {
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   scheduledPosts ScheduledPost[]
+  Content        Content[]
 }
 
 model ScheduledPost {
-  id              String     @id @default(cuid())
+  id              String         @id @default(cuid())
   userId          String
-  generationId    String
-  platform        String
+  contentId       String
+  generationId    String?
+  platform        SocialPlatform
   scheduledAt     DateTime
-  status          PostStatus @default(DRAFT)
-  captionOverride String? // kalau user mau edit caption AI
+  status          PostStatus     @default(DRAFT)
+  captionOverride String? // caption khusus untuk jadwal ini
 
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  generation AIGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    Content       @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  generation AIGeneration? @relation(fields: [generationId], references: [id], onDelete: SetNull)
 }
 
 //
@@ -127,4 +131,40 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Content {
+  id        String         @id @default(cuid())
+  userId    String
+  title     String
+  caption   String? // caption awal (manual atau AI)
+  tag       String?
+  deadline  DateTime
+  status    ContentStatus  @default(DRAFT)
+  sosmed    SocialPlatform
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relasi opsional ke AI Generation
+  generationId String?
+  generation   AIGeneration? @relation(fields: [generationId], references: [id], onDelete: SetNull)
+
+  // Relasi ke ScheduledPost
+  scheduledPosts ScheduledPost[]
+}
+
+enum ContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  TIKTOK
+  FACEBOOK
+  YOUTUBE
+  TWITTER
 }

@@ -1,26 +1,6 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
-
-export default withAuth(
-  function middleware(req) {
-    const { pathname, origin } = req.nextUrl;
-    const isAuth = !!req.nextauth.token;
-
-    if (!isAuth && pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(
-        new URL("/login?error=unauthorized", origin)
-      );
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: () => true,
-    },
-  }
-);
+// middleware.ts
+export { default } from "next-auth/middleware";
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*"], // semua sub-route dashboard
 };
