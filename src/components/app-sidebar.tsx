@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
+
 import {
   IconDashboard,
   IconFileText,
   IconCalendar,
-  IconRobot,
+  IconSparkles,
   IconSettings,
   IconHelp,
-  IconSearch,
-  IconInnerShadowTop,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -39,18 +39,18 @@ const data = {
     },
     {
       title: "Konten",
-      url: "/dashboard/konten",
+      url: "/content",
       icon: IconFileText,
     },
     {
       title: "Kalender",
-      url: "/dashboard/kalender",
+      url: "/calendar",
       icon: IconCalendar,
     },
     {
       title: "AI Caption & Hashtag",
-      url: "/dashboard/ai-tools",
-      icon: IconRobot,
+      url: "/ai-tools",
+      icon: IconSparkles,
     },
   ],
   navSecondary: [
@@ -68,6 +68,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -77,8 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard">
-                <IconInnerShadowTop className="!size-5" />
+              <a href="/dashboard" className="flex items-center gap-2">
                 <span className="text-base font-semibold">
                   Nanasgunung Planner
                 </span>
@@ -87,7 +88,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="flex flex-col justify-between h-full overflow-y-auto">
         <NavMain items={data.navMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>

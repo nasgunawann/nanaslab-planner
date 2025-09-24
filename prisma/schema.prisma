@@ -139,7 +139,7 @@ model Content {
   title     String
   caption   String? // caption awal (manual atau AI)
   tag       String?
-  deadline  DateTime
+  deadline  DateTime?
   status    ContentStatus  @default(DRAFT)
   sosmed    SocialPlatform
   createdAt DateTime       @default(now())

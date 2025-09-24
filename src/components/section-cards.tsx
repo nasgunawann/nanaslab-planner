@@ -1,6 +1,14 @@
 "use client";
 
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
+import {
+  IconCalendarClock,
+  IconFilePencil,
+  IconFiles,
+  IconLayoutGrid,
+  IconSend,
+  IconTrendingDown,
+  IconTrendingUp,
+} from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -42,38 +50,30 @@ export function SectionCards() {
     {
       label: "Total Konten",
       value: data.totalContent,
-      trend: "+",
-      trendValue: "—", // bisa diisi growth %
       description: "Semua konten milik Anda",
       subtext: "Termasuk draft, scheduled, dan published",
-      icon: IconTrendingUp,
+      icon: IconLayoutGrid,
     },
     {
       label: "Draft",
       value: data.draftCount,
-      trend: "",
-      trendValue: "",
       description: "Konten belum dijadwalkan",
       subtext: "Perlu dilengkapi sebelum publish",
-      icon: IconTrendingDown,
+      icon: IconFilePencil,
     },
     {
       label: "Scheduled",
       value: data.scheduledCount,
-      trend: "",
-      trendValue: "",
       description: "Konten siap tayang",
       subtext: "Akan diposting sesuai jadwal",
-      icon: IconTrendingUp,
+      icon: IconCalendarClock,
     },
     {
       label: "Published",
       value: data.publishedCount,
-      trend: "",
-      trendValue: "",
       description: "Konten sudah tayang",
       subtext: "Tersimpan di arsip",
-      icon: IconTrendingUp,
+      icon: IconSend,
     },
   ];
 
@@ -83,22 +83,14 @@ export function SectionCards() {
         <Card key={idx} className="@container/card" data-slot="card">
           <CardHeader>
             <CardDescription>{card.label}</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+              <card.icon className="size-6 text-muted-foreground" />
               {card.value}
             </CardTitle>
-            {card.trendValue && (
-              <CardAction>
-                <Badge variant="outline">
-                  <card.icon />
-                  {card.trend}
-                  {card.trendValue}
-                </Badge>
-              </CardAction>
-            )}
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              {card.description} <card.icon className="size-4" />
+              {card.description}
             </div>
             <div className="text-muted-foreground">{card.subtext}</div>
           </CardFooter>

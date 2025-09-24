@@ -2,6 +2,17 @@
 
 import * as React from "react";
 import useSWR from "swr";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+import {
+  IconBrandInstagram,
+  IconBrandTiktok,
+  IconBrandFacebook,
+  IconBrandX,
+  IconBrandYoutube,
+} from "@tabler/icons-react";
+
 import {
   ColumnDef,
   flexRender,
@@ -49,8 +60,77 @@ type Content = {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "DRAFT":
+      return <Badge className="bg-gray-200 text-black">Draft</Badge>;
+    case "SCHEDULED":
+      return <Badge className="bg-blue-100 text-blue-800">Scheduled</Badge>;
+    case "PUBLISHED":
+      return <Badge className="bg-green-100 text-green-800">Published</Badge>;
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+}
+
+function getSosmedBadge(sosmed: string) {
+  switch (sosmed) {
+    case "INSTAGRAM":
+      return (
+        <Badge className="bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white">
+          <IconBrandInstagram></IconBrandInstagram>Instagram
+        </Badge>
+      );
+    case "TIKTOK":
+      return (
+        <Badge className="bg-gray-600 text-white">
+          <IconBrandTiktok></IconBrandTiktok>TikTok
+        </Badge>
+      );
+    case "FACEBOOK":
+      return (
+        <Badge className="bg-blue-600 text-white">
+          <IconBrandFacebook></IconBrandFacebook>Facebook
+        </Badge>
+      );
+    case "YOUTUBE":
+      return (
+        <Badge className="bg-red-600 text-white">
+          <IconBrandYoutube></IconBrandYoutube>YouTube
+        </Badge>
+      );
+    case "TWITTER":
+      return (
+        <Badge className="bg-gray-900 text-white">
+          <IconBrandX></IconBrandX>Twitter
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{sosmed}</Badge>;
+  }
+}
+
 export function DataTable() {
-  const { data, error } = useSWR<Content[]>("/api/contents", fetcher);
+  const router = useRouter();
+  const { data, error, mutate } = useSWR<Content[]>("/api/contents", fetcher);
+
+  async function handleDelete(id: string) {
+    const confirmed = window.confirm("Yakin ingin menghapus konten ini?");
+    if (!confirmed) return;
+
+    // Optimistic update: hapus dulu di UI
+    mutate((prev) => prev?.filter((item) => item.id !== id), false);
+
+    const res = await fetch(`/api/contents/${id}`, { method: "DELETE" });
+
+    if (res.ok) {
+      toast.success("Konten berhasil dihapus");
+      mutate(); // sync ulang dengan server
+    } else {
+      toast.error("Gagal menghapus konten");
+      mutate(); // rollback
+    }
+  }
 
   const columns = React.useMemo<ColumnDef<Content>[]>(
     () => [
@@ -97,7 +177,7 @@ export function DataTable() {
         accessorKey: "caption",
         header: "Caption",
         cell: ({ row }) => (
-          <div className="line-clamp-2 text-sm text-muted-foreground">
+          <div className="line-clamp-2 text-sm text-muted-foreground truncate max-w-[200px]">
             {row.getValue("caption") || "-"}
           </div>
         ),
@@ -105,24 +185,53 @@ export function DataTable() {
       {
         accessorKey: "tag",
         header: "Tag",
-        cell: ({ row }) => row.getValue("tag") || "-",
+        cell: ({ row }) => {
+          const value = row.getValue("tag") as string | null;
+          return <div className="truncate max-w-[150px]">{value || "-"}</div>;
+        },
       },
+
       {
         accessorKey: "deadline",
-        header: "Deadline",
-        cell: ({ row }) =>
-          format(new Date(row.getValue("deadline")), "dd MMM yyyy"),
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Deadline
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const value = row.getValue("deadline") as string | null;
+          return value ? format(new Date(value), "dd MMM yyyy") : "-";
+        },
       },
       {
         accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => (
-          <Badge variant="outline">{row.getValue("status")}</Badge>
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Status
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
         ),
+        cell: ({ row }) => getStatusBadge(row.getValue("status") as string),
       },
       {
         accessorKey: "sosmed",
-        header: "Sosmed",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Sosmed
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => getSosmedBadge(row.getValue("sosmed") as string),
       },
       {
         id: "actions",
@@ -138,15 +247,15 @@ export function DataTable() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem
-                  onClick={() => navigator.clipboard.writeText(content.id)}
+                  onClick={() => router.push(`/content/edit/${content.id}`)}
                 >
-                  Copy Content ID
+                  Edit
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Edit</DropdownMenuItem>
-                <DropdownMenuItem>Delete</DropdownMenuItem>
+
+                <DropdownMenuItem onClick={() => handleDelete(content.id)}>
+                  Delete
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
@@ -219,7 +328,7 @@ export function DataTable() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              Kolom <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
