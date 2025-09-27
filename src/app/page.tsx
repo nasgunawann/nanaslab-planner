@@ -6,11 +6,6 @@ import { redirect } from "next/navigation";
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
 
-  if (session) {
-    // user sudah login → langsung ke dashboard
-    redirect("/dashboard");
-  }
-
   // user belum login → render landing page
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
