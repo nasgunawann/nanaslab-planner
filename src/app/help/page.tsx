@@ -138,7 +138,7 @@ export default function HelpPage() {
             {/* Kalender Konten */}
             <Card>
               <CardHeader>
-                <CardTitle>Calendar</CardTitle>
+                <CardTitle>Kalender</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>
@@ -153,22 +153,21 @@ export default function HelpPage() {
             {/* AI Chatbot Planner */}
             <Card>
               <CardHeader>
-                <CardTitle>Apa itu AI Chatbot Planner?</CardTitle>
+                <CardTitle>AI Chatbot Planner</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>
                   AI Chatbot Planner adalah asisten pintar yang membantu
-                  merencanakan ide konten, membuat caption, memberi saran
-                  hashtag, dan bahkan menyusun kalender posting. Cukup ketikkan
-                  kebutuhanmu, AI akan memberikan rekomendasi yang bisa langsung
-                  dipakai.
+                  brainstorming dengan merencanakan ide konten, membuat caption,
+                  dan memberi saran hashtag. Cukup ketikkan kebutuhanmu, AI akan
+                  memberikan rekomendasi yang bisa langsung dipakai.
                 </p>
               </CardContent>
             </Card>
             {/* Menu Pengaturan */}
             <Card>
               <CardHeader>
-                <CardTitle>Apa itu Menu Pengaturan?</CardTitle>
+                <CardTitle>Menu Pengaturan</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>
