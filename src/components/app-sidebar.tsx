@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
 
 import {
   IconDashboard,
@@ -48,8 +47,8 @@ const data = {
       icon: IconCalendar,
     },
     {
-      title: "AI Caption & Hashtag",
-      url: "/ai-tools",
+      title: "AI Chatbot Planner",
+      url: "/chatbot",
       icon: IconSparkles,
     },
   ],
@@ -61,15 +60,13 @@ const data = {
     },
     {
       title: "Pengaturan",
-      url: "/dashboard/pengaturan",
+      url: "/settings",
       icon: IconSettings,
     },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname();
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

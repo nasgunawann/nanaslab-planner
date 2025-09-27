@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react"; // ✅ gunakan use untuk unwrap params
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { parseDate } from "chrono-node";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
@@ -54,6 +54,8 @@ export default function EditKontenPage({
 }) {
   const { id } = use(params); // ✅ unwrap Promise
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const [form, setForm] = useState({
     title: "",
@@ -130,7 +132,7 @@ export default function EditKontenPage({
 
     toast.success("Konten berhasil diperbarui!");
     setTimeout(() => {
-      router.push("/content");
+      router.back();
     }, 1500);
   }
 

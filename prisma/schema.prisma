@@ -38,22 +38,30 @@ enum AssetType {
 // MODELS
 //
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   name         String
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-
+  image        String? // URL foto profil
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
   // Relasi ke NextAuth
-  accounts Account[]
-  sessions Session[]
+  accounts     Account[]
+  sessions     Session[]
 
   // Relasi ke data lain
-  assets         Asset[]
-  generations    AIGeneration[]
-  scheduledPosts ScheduledPost[]
-  contents       Content[] // semua konten milik user
+  assets             Asset[]
+  generations        AIGeneration[]
+  scheduledPosts     ScheduledPost[]
+  contents           Content[] // semua konten milik user
+  PasswordResetToken PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  token   String   @id
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  expires DateTime
 }
 
 model Asset {

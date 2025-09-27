@@ -1,9 +1,22 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
   IconBrandInstagram,
@@ -11,7 +24,10 @@ import {
   IconBrandFacebook,
   IconBrandX,
   IconBrandYoutube,
+  IconTrash,
 } from "@tabler/icons-react";
+
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
 import {
   ColumnDef,
@@ -65,12 +81,37 @@ function getStatusBadge(status: string) {
     case "DRAFT":
       return <Badge className="bg-gray-200 text-black">Draft</Badge>;
     case "SCHEDULED":
-      return <Badge className="bg-blue-100 text-blue-800">Scheduled</Badge>;
+      return <Badge className="bg-yellow-200 text-yellow-800">Scheduled</Badge>;
     case "PUBLISHED":
-      return <Badge className="bg-green-100 text-green-800">Published</Badge>;
+      return <Badge className="bg-green-300 text-green-800">Published</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
+}
+
+function DeleteButton({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger>
+        <Button variant="destructive" size="sm">
+          Hapus
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Yakin ingin menghapus?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Aksi ini tidak bisa dibatalkan. Konten yang dihapus akan hilang
+            secara permanen.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Batal</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Ya, hapus</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 function getSosmedBadge(sosmed: string) {
@@ -111,23 +152,56 @@ function getSosmedBadge(sosmed: string) {
 }
 
 export function DataTable() {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDeleteSelected() {
+    const selectedIds = table
+      .getFilteredSelectedRowModel()
+      .rows.map((row) => row.original.id);
+
+    if (selectedIds.length === 0) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/contents/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+
+      if (!res.ok) {
+        toast.error("Gagal menghapus data");
+        return;
+      }
+
+      toast.success("Konten terpilih berhasil dihapus");
+      mutate(); // refresh data
+    } catch (err) {
+      toast.error("Terjadi kesalahan server");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   const router = useRouter();
   const { data, error, mutate } = useSWR<Content[]>("/api/contents", fetcher);
 
   async function handleDelete(id: string) {
-    const confirmed = window.confirm("Yakin ingin menghapus konten ini?");
-    if (!confirmed) return;
+    try {
+      // Optimistic update: hapus dulu di UI
+      mutate((prev) => prev?.filter((item) => item.id !== id), false);
 
-    // Optimistic update: hapus dulu di UI
-    mutate((prev) => prev?.filter((item) => item.id !== id), false);
+      const res = await fetch(`/api/contents/${id}`, { method: "DELETE" });
 
-    const res = await fetch(`/api/contents/${id}`, { method: "DELETE" });
-
-    if (res.ok) {
-      toast.success("Konten berhasil dihapus");
-      mutate(); // sync ulang dengan server
-    } else {
-      toast.error("Gagal menghapus konten");
+      if (res.ok) {
+        toast.success("Konten berhasil dihapus");
+        mutate(); // sync ulang dengan server
+      } else {
+        toast.error("Gagal menghapus konten");
+        mutate(); // rollback
+      }
+    } catch (err) {
+      toast.error("Terjadi kesalahan server");
       mutate(); // rollback
     }
   }
@@ -238,6 +312,29 @@ export function DataTable() {
         enableHiding: false,
         cell: ({ row }) => {
           const content = row.original;
+
+          const handleStatusChange = async (
+            id: string,
+            newStatus: "DRAFT" | "SCHEDULED" | "PUBLISHED"
+          ) => {
+            try {
+              const res = await fetch(`/api/contents/${id}`, {
+                method: "PATCH", // atau PUT sesuai API kamu
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+              });
+
+              if (!res.ok) throw new Error("Gagal update status");
+
+              toast.success(`Status berhasil diubah ke ${newStatus}`);
+
+              // ✅ refresh data table setelah sukses
+              mutate();
+            } catch (err) {
+              toast.error("Gagal mengubah status");
+            }
+          };
+
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -253,8 +350,52 @@ export function DataTable() {
                   Edit
                 </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={() => handleDelete(content.id)}>
-                  Delete
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      Delete
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Yakin ingin menghapus?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Aksi ini tidak bisa dibatalkan. Konten akan dihapus
+                        permanen.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Batal</AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button onClick={() => handleDelete(content.id)}>
+                          Ya, hapus
+                        </Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Separator */}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-gray-700">
+                  Status: {getStatusBadge(content.status)}
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange(content.id, "DRAFT")}
+                >
+                  Draft
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange(content.id, "SCHEDULED")}
+                >
+                  Scheduled
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange(content.id, "PUBLISHED")}
+                >
+                  Published
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -325,6 +466,43 @@ export function DataTable() {
           }
           className="max-w-sm"
         />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              size="sm"
+              className="ml-4 bg-red-600 text-white hover:bg-red-800"
+              disabled={
+                table.getFilteredSelectedRowModel().rows.length === 0 ||
+                deleting
+              }
+            >
+              {deleting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Spinner variant="circle-filled" size="sm" />
+                  Deleting...
+                </div>
+              ) : (
+                <IconTrash />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Yakin ingin menghapus?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {`Anda akan menghapus ${
+                  table.getFilteredSelectedRowModel().rows.length
+                } konten terpilih. Aksi ini tidak bisa dibatalkan.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction asChild>
+                <Button onClick={handleDeleteSelected}>Ya, hapus</Button>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -389,7 +567,7 @@ export function DataTable() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Tidak ada data.
+                  Belum ada konten.
                 </TableCell>
               </TableRow>
             )}

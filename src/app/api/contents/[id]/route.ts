@@ -43,6 +43,32 @@ export async function PUT(
   }
 }
 
+// PATCH (partial update)
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await req.json();
+
+    // hanya ambil field yang diizinkan
+    const allowed = ["title", "caption", "tag", "deadline", "status", "sosmed"];
+    const data: any = {};
+    for (const key of allowed) {
+      if (body[key] !== undefined) data[key] = body[key];
+    }
+
+    const updated = await prisma.content.update({
+      where: { id: params.id },
+      data,
+    });
+
+    return NextResponse.json(updated);
+  } catch (e) {
+    return NextResponse.json({ error: "Update failed" }, { status: 400 });
+  }
+}
+
 // DELETE
 export async function DELETE(
   _: Request,
