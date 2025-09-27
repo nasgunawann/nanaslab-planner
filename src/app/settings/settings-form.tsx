@@ -136,20 +136,20 @@ export default function SettingsForm({
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleProfileSave} className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={image} alt="Profile picture" />
-                      // AvatarFallback aman
-                      <AvatarFallback>
-                        {name ? name.slice(0, 2).toUpperCase() : "??"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
-                  </div>
+                  {/* <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={image} alt="Profile picture" />
+                        // AvatarFallback aman
+                        <AvatarFallback>
+                          {name ? name.slice(0, 2).toUpperCase() : "??"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div> */}
                   <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
                     <Input
