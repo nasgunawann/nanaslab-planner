@@ -1,5 +1,11 @@
-// middleware.ts
-export { default } from "next-auth/middleware";
+// src/middleware.ts
+import { withAuth } from "next-auth/middleware";
+
+export default withAuth({
+  pages: {
+    signIn: "/login", // arahkan user belum login ke /login
+  },
+});
 
 export const config = {
   matcher: [
