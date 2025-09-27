@@ -14,5 +14,6 @@ export const config = {
     "/content/:path*",
     "/calendar/:path*",
     "/chatbot/:path*",
+    "/uploads/:path*",
   ],
 };
