@@ -43,8 +43,8 @@ Banyak UMKM dan kreator kesulitan konsisten membuat dan mempublikasikan konten k
 
 ## 📄 Landing Page
 <img src="./screenshots/landingpage.png" alt="Landing Page" width="600"/>
-Selain aplikasi inti, proyek ini juga meyertakan **landing page ala SaaS** untuk memperkenalkan Nanasgunung Content Planner.  
-Landing page ini menjadi **pintu masuk utama** bagi calon pengguna, dengan struktur modern yang terdiri dari:
+Selain aplikasi inti, proyek ini juga meyertakan landing page ala SaaS (Software as a Service) untuk memperkenalkan Nanasgunung Content Planner.  
+Landing page ini menjadi pintu masuk utama bagi calon pengguna, dengan struktur modern yang terdiri dari:
 
 - **Hero Section** → headline singkat, subheadline, dan CTA (Call to Action).  
 - **Kenapa Memilih Nanasgunung Planner** → menampilkan keunggulan utama seperti kalender visual, AI Assistant, dashboard yang ringkas.  
@@ -73,6 +73,34 @@ Landing page ini menjadi **pintu masuk utama** bagi calon pengguna, dengan struk
    npm run build
    npm start
    
+## 🔧 Environment & Database Setup
+
+```env
+# Connect to Supabase via connection pooling
+DATABASE_URL="YOUR_DATABASE_URL"
+
+# Direct connection to the database. Used for migrations
+DIRECT_URL="YOUR_DIRECT_URL"
+
+#NextAuth
+NEXTAUTH_URL=YOUR_URL
+NEXTAUTH_SECRET=YOUR_SECRET
+
+#Replicate API
+REPLICATE_API_TOKEN=YOUR_API_TOKEN
+
+```
+
+### Prisma Migration
+Jika menggunakan Prisma, jalankan migrasi untuk membuat schema database:
+```bash
+npx prisma migrate dev
+```
+
+### Supabase Setup
+1. Buat project baru di [Supabase](https://supabase.com).  
+2. Salin URL project dan API keys ke file `.env`.  
+
 ## 🤖 AI Support Explanation
 
 - **Saat development:**  
