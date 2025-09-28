@@ -18,7 +18,7 @@ Banyak UMKM dan kreator kesulitan konsisten membuat dan mempublikasikan konten k
 - **Frontend:** Next.js (React, App Router)  
 - **Styling:** Tailwind CSS v4 (configless), shadcn/ui  
 - **Backend:** Next.js API Routes (in-memory demo; Prisma optional untuk DB)  
-- **Deployment:** Vercel (alternatif: Netlify / Firebase Hosting)  
+- **Deployment:** Vercel 
 - **IBM Granite Instruct/Code** → membantu generate dan refine code, memberikan ide dan saran.  
 
 **Alasan pemilihan teknologi:**
