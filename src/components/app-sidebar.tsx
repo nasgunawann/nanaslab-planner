@@ -78,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/dashboard" className="flex items-center gap-2">
                 <span className="text-base font-semibold">
-                  Nanasgunung Planner
+                  Nanasgunung Content Planner
                 </span>
               </a>
             </SidebarMenuButton>

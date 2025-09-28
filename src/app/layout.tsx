@@ -7,8 +7,12 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Nanaslab Planner",
-  description: "AI-powered content planner for UMKM",
+  title: "Nanasgunung Content Planner",
+  description:
+    "Rencanakan, kelola, dan publikasikan konten Anda dengan mudah menggunakan Nanasgunung Content Planner. Alat sempurna untuk UMKM, kreator, dan tim marketing.",
+  icons: {
+    icon: "/favicon.ico", // bisa .ico, .png, atau .svg
+  },
 };
 
 export default function RootLayout({
@@ -17,8 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html
+      lang="en"
+      className="scroll-smooth scroll-pt-20"
+      suppressHydrationWarning
+    >
+      <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster position="top-right" richColors closeButton />
           <Providers>{children}</Providers>

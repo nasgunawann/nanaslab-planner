@@ -189,7 +189,7 @@ const ChatRoom = () => {
                         <MessageAvatar
                           src={
                             message.role === "user"
-                              ? "https://github.com/nasgunawann.png"
+                              ? ""
                               : "https://nanasgunung.com/nanas.png"
                           }
                           name={message.role === "user" ? "User" : "AI"}
